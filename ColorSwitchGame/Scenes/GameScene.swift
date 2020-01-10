@@ -44,7 +44,7 @@ class GameScene: SKScene {
     }
     
     func layoutScene() {
-        backgroundColor = UIColor(red: 44/255, green: 62/255, blue: 80/255, alpha: 1)
+        backgroundColor = UIColor.appBackgroundColor
         
         layoutColorSwitch()
         layoutScoreLabel()
@@ -93,8 +93,23 @@ class GameScene: SKScene {
         turnWheel()
     }
     
+    func saveScore() {
+        UserDefaults.standard.set(score, forKey: "RecentScore")
+        let hightScore = UserDefaults.standard.integer(forKey: "HightScore")
+        if score > hightScore {
+            UserDefaults.standard.set(score, forKey: "HightScore")
+        }
+    }
+    
+    func goToMenu() {
+        guard let view = view else { return }
+        let menuScene = MenuScene(size: view.bounds.size)
+        view.presentScene(menuScene)
+    }
+    
     func gameOver() {
-        print("GAME OVER")
+        saveScore()
+        goToMenu()
     }
     
     func proccessContact(for contact: SKPhysicsContact) {
@@ -103,6 +118,7 @@ class GameScene: SKScene {
         if currentColorIndex == switchState.rawValue {
             nodeBall.run(SKAction.fadeOut(withDuration: 0.2)) {
                 self.score += 5
+                self.run(SKAction.playSoundFileNamed("WaterDrop", waitForCompletion: false))
                 nodeBall.removeFromParent()
                 self.spawnBall()
             }
