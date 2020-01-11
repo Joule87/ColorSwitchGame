@@ -15,21 +15,33 @@ class GameScene: SKScene {
     var currentColorIndex: Int?
     
     let scoreLabel = SKLabelNode(text: "0")
+    var timer: Timer?
+    
     var score = 0 {
         didSet {
             scoreLabel.text = "\(score)"
         }
     }
     
+    var difficulty: CGFloat = 0 {
+        didSet {
+            physicsWorld.gravity = CGVector(dx: 0.0, dy: difficulty)
+        }
+    }
+    
     override func didMove(to view: SKView) {
         setupPhysics()
         layoutScene()
-        
+        timer = Timer.scheduledTimer(timeInterval: 10, target:self, selector:#selector(increaseDifficulty), userInfo: nil, repeats: true)
     }
     
     func setupPhysics() {
-        physicsWorld.gravity = CGVector(dx: 0.0, dy: -2.0)
+        difficulty = -2.0
         physicsWorld.contactDelegate = self
+    }
+    
+    @objc func increaseDifficulty() {
+        difficulty -= 0.5
     }
     
     func layoutColorSwitch() {
@@ -68,7 +80,7 @@ class GameScene: SKScene {
         ball.colorBlendFactor = 1.0
         ball.name = "Ball"
         ball.zPosition = ZPositions.ball
-        ball.size = CGSize(width: 30, height: 30)
+        ball.size = CGSize(width: 40, height: 40)
         ball.position = CGPoint(x: frame.midX, y: frame.maxY - ball.size.height * 2)
         ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width/2)
         
@@ -110,6 +122,12 @@ class GameScene: SKScene {
     func gameOver() {
         saveScore()
         goToMenu()
+        killTimer()
+    }
+    
+    func killTimer() {
+        timer?.invalidate()
+        timer = nil
     }
     
     func proccessContact(for contact: SKPhysicsContact) {
